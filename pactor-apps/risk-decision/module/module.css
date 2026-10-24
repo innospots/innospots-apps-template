@@ -1,0 +1,46 @@
+/**
+ * 模块自带的全局样式（随 client bundle 打进 tgz）。
+ *
+ * 只包含独立应用 app/globals.css 中与模块页面相关、且不能由 Shell 统一
+ * 提供的规则：
+ * - 无菜单外壳（layout: admin）的视口与滚动约束；
+ * - Pagination 的响应式显隐补丁（聚合样式表中基础 display 工具类排在
+ *   响应式变体之后，会压过变体）。
+ *
+ * Tailwind 基础样式、pactor-app 聚合样式与主题变量（theme.css）由 Shell
+ * 统一加载，模块内不重复引入，避免产生第二份 reset / 令牌。
+ */
+
+/* ── 无菜单外壳：Layout 锁定视口高度，内容区独立滚动 ────────────── */
+.shell-root {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.shell-content {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* 聚合表内基础 display 工具类排在响应式变体之后，会压过变体：
+   按 Tailwind 语义重建 Pagination 文案的显隐组合
+   （断点与各变体一致：sm 40rem / md 48rem）。 */
+@media (min-width: 40rem) {
+  .hidden.sm\:block {
+    display: block;
+  }
+}
+
+@media (min-width: 48rem) {
+  .hidden.md\:block {
+    display: block;
+  }
+
+  .hidden.md\:flex {
+    display: flex;
+  }
+
+  .flex.md\:hidden {
+    display: none;
+  }
+}
