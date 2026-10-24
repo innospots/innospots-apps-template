@@ -295,30 +295,4 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
-
-/* module/module.css */
-.shell-root {
-  height: 100dvh;
-  overflow: hidden;
-}
-.shell-content {
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-@media (min-width: 40rem) {
-  .hidden.sm\:block {
-    display: block;
-  }
-}
-@media (min-width: 48rem) {
-  .hidden.md\:block {
-    display: block;
-  }
-  .hidden.md\:flex {
-    display: flex;
-  }
-  .flex.md\:hidden {
-    display: none;
-  }
-}
 /*# sourceMappingURL=index.css.map */

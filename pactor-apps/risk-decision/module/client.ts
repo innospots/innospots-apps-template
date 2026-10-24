@@ -7,7 +7,6 @@
 // 主题变量（app/theme.css）由 Shell 统一加载，模块内不再引入。
 import "../src/pactor/components/risk-shell.css";
 import "../src/pactor/components/risk-decision.css";
-import "./module.css";
 
 export const extensions = {
   components: {},

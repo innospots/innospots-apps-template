@@ -2,7 +2,7 @@
   "schemaVersion": "1",
   "id": "pactor-app-risk-analysis",
   "name": "risk-analysis",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "pactorVersionRange": "1.55.0",
   "basePath": "/pactor-app-risk-analysis",
   "sitemap": "dsl/sitemap.yaml",

@@ -2,7 +2,7 @@
   "schemaVersion": "1",
   "id": "pactor-app-risk-decision",
   "name": "risk-decision",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "pactorVersionRange": "1.55.0",
   "basePath": "/pactor-app-risk-decision",
   "sitemap": "dsl/sitemap.yaml",
