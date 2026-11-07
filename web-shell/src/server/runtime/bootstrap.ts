@@ -1,15 +1,14 @@
 import type { LayoutDsl, SitemapResource } from "pactor-app";
 
-import { getMenusIndex, getPagesIndex, getSitemapMeta } from "@/modules/registry";
+import { getPagesIndex, getSitemapMeta } from "@/modules/registry";
 import type { ShellUser } from "@/server/auth/session";
 
 import { readGeneratedDsl } from "./assembly-io";
-import { canSeePage, filterVisibleMenus } from "./visibility";
+import { canSeePage } from "./visibility";
 
 export function buildRuntimeBootstrap(user: ShellUser | null): SitemapResource {
   const meta = getSitemapMeta();
   const { pages } = getPagesIndex();
-  const { menus } = getMenusIndex();
 
   const visiblePages = pages.filter((p) => canSeePage(p, user));
 
@@ -26,11 +25,6 @@ export function buildRuntimeBootstrap(user: ShellUser | null): SitemapResource {
   });
 
   const layouts = meta.layouts as Record<string, LayoutDsl>;
-  const filteredMenus = filterVisibleMenus(
-    menus,
-    user,
-    pages,
-  ) as SitemapResource["menus"];
 
   return {
     id: "innospots-web-shell",
@@ -53,6 +47,8 @@ export function buildRuntimeBootstrap(user: ShellUser | null): SitemapResource {
         }
       : {}),
     pages: sitemapPages,
-    menus: filteredMenus,
+    // 菜单由 /api/menus 单独下发（PactorHost 作为附加 sitemap 源合并），
+    // 保证与本轮会话的可见性过滤结果一致，不在 bootstrap 中重复内联。
+    menus: [],
   };
 }

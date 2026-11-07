@@ -4,7 +4,7 @@
 
 > 整体架构与术语见 InnoSpots 前端模块化设计（Build-time Composition + Runtime DSL Loading）。UI 模块侧打包见仓库 `innospots-nexus-ui-console` 的 `npm run build:module`。
 
-**当前接入**：`pactor-apps` 下两个 tgz 模块 `risk-analysis@0.1.2` / `risk-decision@0.1.2`。风险分析的业务 API 已随 tgz 的 `server/index.mjs` 分发，由 Shell 的 `/api/modules/<moduleId>/*` 统一承接。左侧固定菜单定义在 `src/shell/sitemap.yaml`，模块启停与菜单接入模式在 `src/modules/module-list.json`。
+**当前接入**：`pactor-apps` 下两个 tgz 模块 `risk-analysis@0.1.6` / `risk-decision@0.1.6`。风险分析的业务 API 已随 tgz 的 `server/index.mjs` 分发，由 Shell 的 `/api/modules/<moduleId>/*` 统一承接。Shell 一级菜单定义在 `src/shell/sitemap.yaml`（`root: true`），两级导航由 `/api/menus` 下发；模块启停与菜单接入模式在 `src/modules/module-list.json`。
 
 ---
 
@@ -106,7 +106,8 @@
 ```text
 浏览器 → Next（工作区 catch-all 校验 URL）
       → layout 内 PactorHost（SitemapApp）
-      → GET /api/runtime/bootstrap（菜单 + 内联 DSL）
+      → GET /api/menus（两级导航 + sitemap 菜单片段）
+      → GET /api/runtime/bootstrap（布局元数据 + 内联 DSL）
       → GET /api/runtime/pages/{globalPageId}（懒加载页）
 ```
 
@@ -268,7 +269,7 @@ flowchart LR
 ## 工程结构
 
 ```text
-frontend_template/
+web-shell/
 ├── app/
 │   ├── layout.tsx                 # 根 Layout、全局样式
 │   ├── page.tsx                   # Shell 首页（装配状态概览）
@@ -276,17 +277,18 @@ frontend_template/
 │   ├── (workspace)/
 │   │   ├── layout.tsx             # 挂载 PactorHost（跨导航常驻）
 │   │   └── [...slug]/page.tsx     # 必选 catch-all；按路由表校验，非法路径 404
+│   ├── api/menus/route.ts         # 两级导航（root + modules）与 sitemap 菜单片段
 │   ├── api/runtime/
-│   │   ├── bootstrap/route.ts     # 合并后的 sitemap（会话裁剪入口）
+│   │   ├── bootstrap/route.ts     # 布局元数据 + 内联 DSL（菜单为空）
 │   │   ├── pages/[pageId]/route.ts
 │   │   └── fragments/[fragmentId]/route.ts
 │   └── api/modules/[moduleId]/[[...path]]/route.ts
 │                                   # 模块 server API 统一分发
 ├── src/
 │   ├── shell/                     # Shell 自带默认站点（构建期最先装配）
-│   │   ├── sitemap.yaml           # 默认布局 + 两个固定一级菜单（指向模块页面）
+│   │   ├── sitemap.yaml           # 默认布局 + 一级菜单（root: true，指向模块页面）
 │   │   └── layouts/
-│   │       └── shell.layout.yaml  # 左侧不可展开菜单 + 右侧 PageOutlet
+│   │       └── shell.layout.yaml  # 60px 一级图标轨 + 右侧 PageOutlet
 │   ├── modules/
 │   │   ├── module-list.json       # 启用哪些 UI 包、菜单接入模式、访问级别
 │   │   ├── styles/                # Shell 统一皮肤（theme.css）
@@ -328,36 +330,43 @@ Shell 自身也按 Pactor 的 sitemap / layout / page YAML 方式描述一个**�
 
 ```text
 src/shell/
-├── sitemap.yaml                  # 站点元信息、默认 layout、两个固定一级菜单
-└── layouts/shell.layout.yaml     # 默认布局
+├── sitemap.yaml                  # 站点元信息、默认 layout、一级菜单（root: true）
+└── layouts/shell.layout.yaml     # 60px 一级图标轨 + PageOutlet
 ```
 
-现有布局效果：**最左侧为固定的一级菜单**（`Sidebar collapsible: false`，菜单项无 `children`，既不可收起也不可展开），右侧 `Content` 内的 `PageOutlet` 是页面出口。菜单直接指向已安装模块的页面，右侧渲染对应模块内容。
+布局分两层：**最左侧 60px 图标轨**由 Shell 布局渲染（`Menu collapsed`，只显示图标，悬浮显示 Tooltip）；右侧 `Content` 内的 `PageOutlet` 渲染应用布局，应用布局内含 **224px 二级菜单 Sider** 与页面内容。模块页面通过 `parent: shell` 嵌套进 Shell 外壳。
 
 ### sitemap.yaml 要点
 
 - `layout: shell`：站点默认布局，模块页面未声明 `menu.layout` / `sitemap.layout` 时自动落入。
-- `menus`：`type: page` 且带 `pageId`，`pageId` 使用**全局页面 id**（`<moduleId>:<pageId>`）。装配器对已含 `:` 的 id 不再重复加 `shell:` 前缀。当前为：
+- `menus`：`type: page`、`root: true`，`pageId` 使用**全局页面 id**（`<moduleId>:<pageId>`），`path` / `title` 由运行时按 `pageId` 从页面继承。当前为：
 
-| id | 标题 | 目标页面 | 路径 | 图标 | 顺序 |
-| --- | --- | --- | --- | --- | --- |
-| `risk-analysis` | 风险分析 | `pactor-app-risk-analysis:risk-data-value` | `/pactor-app-risk-analysis` | `chart` | 1 |
-| `risk-decision` | 风险决策 | `pactor-app-risk-decision:risk-decision` | `/pactor-app-risk-decision` | `shield` | 2 |
+| id | 标题 | 目标页面 | 路径 | 图标 |
+| --- | --- | --- | --- | --- |
+| `app-risk-analysis` | 风险分析 | `pactor-app-risk-analysis:risk-data-value` | `/pactor-app-risk-analysis` | `chart` |
+| `app-risk-decision` | 风险决策 | `pactor-app-risk-decision:risk-decision` | `/pactor-app-risk-decision` | `shield` |
 
-- Shell 不再自带入口页；`risk-analysis` / `risk-decision` 目标页的 DSL 来自各自 npm 模块。
+- Shell 不再自带入口页；两个一级菜单目标页的 DSL 来自各自 npm 模块。
 - `layouts.shell`：值是相对 `src/shell/` 的 YAML 路径（与 `nextjs-version` 的 `*.layout.yaml` 约定一致），装配器读取后内联进 `sitemap-meta.json`。
 
-### 模块菜单如何并入
+### 两级菜单如何生成
 
-两个 tgz 的 sitemap 自带菜单与 `layout: admin`（无侧栏的空壳）。若直接合并，会出现重复一级菜单，且页面会绕开 Shell 固定侧栏。`module-list.json` 用两个选项收敛：
+1. 装配器把 Shell 自带站点的 `menus` 与各模块 sitemap 的 `menus` 合并；模块菜单会打上 `moduleId` 标记（`markModuleMenus`）。
+2. `/api/menus` 按会话过滤后一次性返回：
+   - `menus`：原始菜单片段，`PactorHost` 作为附加 sitemap 源合并，供路由 / 布局解析；
+   - `navigation`：展示模型 `{ user, app, root, modules }`，`root` 为一级菜单，`modules[moduleId]` 为各应用二级菜单。
+3. `PactorHost` 用当前路径对 `navigation.root` 做最长前缀匹配得到 `activeRoot`，把 `rootMenus`、`activeRootKey` 与当前应用的 `menus` 写入 `session.context` 服务。
+4. `shell.layout.yaml` 读取 `session.rootMenus` 渲染一级图标轨；应用布局读取 `session.menus` 渲染自己的 `Sider`。
+
+`module-list.json` 的 `menuMode` 仍然控制装配期菜单处理：
 
 ```json
-{ "package": "risk-decision", "enabled": true, "menuMode": "hidden", "access": "public" }
+{ "package": "risk-decision", "enabled": true, "menuMode": "merge", "access": "public" }
 ```
 
-- `menuMode: "hidden"`：模块菜单递归标记 `hidden: true` 并删除菜单级 `layout`。它们仍参与路由匹配（如 `/pactor-app-risk-decision/integration-logs`），但不出现在左侧导航，页面回落到 Shell 的 `shell` 布局。菜单 `path` / `title` 由运行时按 `pageId` 从页面继承。
-- `access: "public"`：为模块页面补 `public: true`。Shell 会话当前恒为匿名，非 public 页面会被 bootstrap 与页面 API 过滤。
-- 路由匹配按菜单 `order` 升序，未声明 `order` 的模块隐藏菜单排在 Shell 固定菜单之后；同一 URL 命中时以 Shell 菜单为准（布局即 `shell`）。
+- `menuMode: "merge"`（当前配置）：模块菜单原样并入，作为该应用的二级菜单显示。
+- `menuMode: "hidden"`：模块菜单递归标记 `hidden: true` 并删除菜单级 `layout`；仍参与路由匹配（如 `/pactor-app-risk-decision/integration-logs`），但不出现在两级导航中，页面回落到 Shell 的 `shell` 布局。
+- `access: "public"`：为模块页面补 `public: true`。Shell 会话当前恒为匿名，非 public 页面会被 `/api/menus`、bootstrap 与页面 API 过滤。
 
 ### shell.layout.yaml 结构
 
@@ -367,11 +376,15 @@ body:
   children:
     - type: Sidebar
       props:
-        collapsible: false        # 不显示折叠触发器
-        brand: { title: InnoSpots }
+        style: { "--sidebar-width": "60px" }
+        collapsible: false
         content:
-          type: SitemapMenu
-          props: { items: ${data.session.menus} }
+          type: Menu
+          props:
+            items: ${data.session.rootMenus}
+            mode: inline
+            collapsed: true
+            selectedKey: ${data.session.activeRootKey}
           events:
             onSelect:
               - action: navigate
@@ -382,8 +395,8 @@ body:
             - type: PageOutlet
 ```
 
-- `SitemapMenu` 的数据来自 `session.menus`（`SitemapApp` 注入，等价于 `toSitemapNavItems(registry.tree())`）。
-- 右侧出口是 `PageOutlet`，页面内容由其所在 layout 链渲染；因此三方应用页面只要沿用 `shell` 布局，就会落到同一右侧区域。
+- `session.rootMenus` / `session.activeRootKey` 由 `PactorHost` 覆盖的 `session.context` 服务注入；菜单由 `src/shell/sitemap.yaml` 的 `root: true` 条目生成。
+- 右侧 `PageOutlet` 渲染应用布局：应用通过 `parent: shell` 把自己嵌套进 Shell 的 Content，应用布局内的 `Sider`（224px）读取 `${data.session.menus}` 渲染二级菜单。
 - 若模块自带同名布局 `shell`，装配时 **Shell 的布局优先**（`{ ...moduleLayouts, ...baseLayouts }`），避免默认外壳被模块覆盖。
 
 ### 新增一级菜单
@@ -403,7 +416,7 @@ pnpm build
 pnpm start   # 默认 http://localhost:9020
 ```
 
-访问 `/pactor-app-risk-analysis`、`/pactor-app-risk-decision`、`/pactor-app-risk-decision/integration-logs`：左侧始终为固定的「风险分析 / 风险决策」两个一级菜单，右侧渲染对应模块页面；`/api/runtime/bootstrap` 返回 `layout: "shell"`、两个可见菜单（另有隐藏路由菜单）与内联页面 DSL。
+访问 `/pactor-app-risk-analysis`、`/pactor-app-risk-analysis/guide`、`/pactor-app-risk-decision`、`/pactor-app-risk-decision/integration-logs`：最左侧 60px 图标轨始终为「风险分析 / 风险决策」，右侧应用内 224px Sider 显示当前应用的二级菜单；`/api/menus` 返回 `navigation.root` 与 `navigation.modules`，`/api/runtime/bootstrap` 返回 `layout: "shell"`、布局元数据与内联页面 DSL（菜单字段为空）。
 
 ---
 
@@ -421,13 +434,13 @@ pnpm start   # 默认 http://localhost:9020
     {
       "package": "risk-analysis",
       "enabled": true,
-      "menuMode": "hidden",
+      "menuMode": "merge",
       "access": "public"
     },
     {
       "package": "risk-decision",
       "enabled": true,
-      "menuMode": "hidden",
+      "menuMode": "merge",
       "access": "public"
     }
   ]
@@ -439,7 +452,7 @@ pnpm start   # 默认 http://localhost:9020
 | `package` | npm 包名，须提供 `exports["./manifest"]`、`./client` 等 |
 | `enabled` | 是否参与本次装配 |
 | `basePath` | 可选；Shell 侧 URL 前缀，覆盖模块 manifest 中的默认 `basePath` |
-| `menuMode` | 可选；`merge`（默认，原样并入导航）或 `hidden`（只注册隐藏路由并移除菜单级 layout） |
+| `menuMode` | 可选；`merge`（默认，模块菜单作为该应用的二级菜单并入 `/api/menus`）或 `hidden`（只注册隐藏路由并移除菜单级 layout） |
 | `access` | 可选；设为 `public` 时，模块内未声明 `public` 的页面默认公开 |
 
 模块内 sitemap 的 `path` 会与 `basePath` 拼接为最终 URL；菜单里的相对 `pageId` 在装配时会加上 `moduleId:` 命名空间，已含 `:` 的全局 id 保持不变。
@@ -455,8 +468,8 @@ pnpm start   # 默认 http://localhost:9020
 也可用 `npm pack` 生成的 `.tgz`。本仓库使用 **pnpm** 管理依赖，当前接入命令为：
 
 ```bash
-pnpm add ../pactor-apps/risk-analysis/risk-analysis-0.1.2.tgz \
-         ../pactor-apps/risk-decision/risk-decision-0.1.2.tgz
+pnpm add ../pactor-apps/risk-analysis/risk-analysis-0.1.6.tgz \
+         ../pactor-apps/risk-decision/risk-decision-0.1.6.tgz
 ```
 
 **注意**：`file:` / tgz 安装的是包的 `files` 字段内容（一般为 `dist-module/`），安装前请在模块仓库执行 `npm run build:module`。tgz 中的 `dist-module/` 包含 manifest、DSL、客户端扩展、`client/index.css`、静态资源；模块声明 `serverEntry` 时还包含 `server/index.mjs`。模块页面样式应通过 `module/client.ts` 的 CSS import 打进 tgz；业务 API 应通过 `module/server.ts` 打进 tgz，无需在 Shell 复制 Next 路由（见下一节）。
@@ -537,12 +550,12 @@ handler 异常 → 500。当前分发器不做隐式鉴权，原样传递 `Reque
 
 - Node.js 20+
 - pnpm（仓库使用 pnpm 管理 `node_modules`）
-- 已构建好的 UI 模块 tgz（当前为 `risk-analysis-0.1.2.tgz`、`risk-decision-0.1.2.tgz`）
+- 已构建好的 UI 模块 tgz（当前为 `risk-analysis-0.1.6.tgz`、`risk-decision-0.1.6.tgz`）
 
 ### 安装
 
 ```bash
-cd frontend_template
+cd web-shell
 pnpm install
 ```
 
@@ -581,12 +594,12 @@ pnpm start    # 默认端口 9020
 
 ```bash
 # 1. 安装 tgz（package.json 记录 file: 协议）
-cd frontend_template
-pnpm add ../pactor-apps/risk-analysis/risk-analysis-0.1.2.tgz \
-         ../pactor-apps/risk-decision/risk-decision-0.1.2.tgz
+cd web-shell
+pnpm add ../pactor-apps/risk-analysis/risk-analysis-0.1.6.tgz \
+         ../pactor-apps/risk-decision/risk-decision-0.1.6.tgz
 
 # 2. 在 src/modules/module-list.json 启用模块并配置菜单接入模式
-#    当前：menuMode=hidden、access=public
+#    当前：menuMode=merge、access=public
 
 # 3. 装配 + 校验 + 启动
 pnpm assemble:modules
@@ -634,7 +647,7 @@ pnpm dev
 3. 页面 YAML 的**磁盘路径**（构建前后一致，供服务端读 DSL）：
 
    ```text
-   frontend_template/.generated/pactor/dsl/console/role-list.yaml
+   web-shell/.generated/pactor/dsl/console/role-list.yaml
    ```
 
 运行期 Pactor **不会**直接读上述路径；浏览器通过 API 拿 DSL：
@@ -702,7 +715,7 @@ public/modules/<moduleId>/<version>/...
 ### 打包产物目录一览（Shell）
 
 ```text
-frontend_template/
+web-shell/
 ├── .generated/pactor/          # DSL + 索引 + client-registry（部署需保留在镜像/运行目录）
 ├── public/modules/             # 模块静态资源（与 public 一起发布）
 └── .next/                      # Next 生产构建（+ 可选 .next/standalone）
@@ -886,7 +899,8 @@ npm run pack:module     # 构建 + 校验 + 生成 innospots-ui-console-0.1.0.tg
 
 | 接口 | 说明 |
 | --- | --- |
-| `GET /api/runtime/bootstrap` | 当前用户可见的合并 sitemap（菜单、布局元数据、非 lazy 页 DSL） |
+| `GET /api/menus` | 两级导航：`menus`（供 PactorApp 合并的 sitemap 菜单片段）+ `navigation`（`{ user, app, root, modules }`），按当前会话过滤 |
+| `GET /api/runtime/bootstrap` | 当前用户可见的 sitemap（布局元数据、非 lazy 页 DSL；`menus` 为空，由 `/api/menus` 提供） |
 | `GET /api/runtime/pages/{pageId}` | 页面资源（`pageId` 为 **globalPageId**，如 `console:role-list`）；返回 PageResource 信封 `{ id, resourceType: "page", version, dslVersion, schema }`，与 Pactor `createSitemapLoader` 的懒加载契约对齐 |
 | `GET /api/runtime/fragments/{fragmentId}` | DSL 片段（预留） |
 | `GET/POST/... /api/modules/{moduleId}/*` | 模块 server entry 的统一分发入口；逻辑路径 = 原始 `/api/...`，支持精确与 `:param` 匹配；`HEAD` 回退 GET，`OPTIONS` 返回按路径计算的 `Allow` |

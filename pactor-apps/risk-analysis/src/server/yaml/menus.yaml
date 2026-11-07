@@ -1,0 +1,20 @@
+# 菜单配置：由 /api/menus 接口下发，客户端与 /api/sitemap 多源合并。
+# path / title 缺省时从 pageId 指向的页面继承。
+# layout 指向本应用的布局：独立运行时是根布局；接入 Shell 后该布局以
+# parent: shell 嵌套在 Shell 内容区，渲染应用自己的二级菜单。
+- id: risk-analysis
+  type: page
+  pageId: risk-data-value
+  path: /
+  title: 风险分析
+  icon: chart
+  layout: risk-analysis-admin
+  public: true
+- id: analysis-guide
+  type: page
+  pageId: analysis-guide
+  path: /guide
+  title: 分析说明
+  icon: file-text
+  layout: risk-analysis-admin
+  public: true

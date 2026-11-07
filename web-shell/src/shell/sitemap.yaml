@@ -1,10 +1,10 @@
-# Shell 自带站点：固定左侧菜单 + 默认布局。
+# Shell 自带站点：默认布局 + 一级菜单（最左侧 60px 图标轨）。
 # 由 scripts/assemble-modules.mjs 在 npm 模块之前装配：
 #   - layout: shell 作为缺省布局，模块页面未声明 layout 时自动落入；
-#   - menus 直接指向已安装模块的全局页面 id（<moduleId>:<pageId>），
-#     左侧只保留两个固定一级菜单；
-#   - 模块自身的菜单在 module-list.json 中以 menuMode: "hidden" 接入，
-#     仅保留隐藏路由（如风险决策的对接日志），不重复出现在导航中。
+#   - menus 中的 root: true 条目即 Shell 一级菜单，pageId 指向模块页面
+#     （已带模块命名空间），path / title 由运行时按 pageId 从页面继承；
+#   - 模块自己的菜单（各模块 sitemap 的 menus）由装配器打上 moduleId，
+#     运行时按当前所属应用下发到应用布局内的二级菜单。
 id: shell
 resourceType: sitemap
 version: 1
@@ -13,27 +13,27 @@ app: { name: InnoSpots }
 auth: { loginPath: /login }
 layout: shell
 
-menus:
-  - {
-      id: risk-analysis,
-      type: page,
-      pageId: "pactor-app-risk-analysis:risk-data-value",
-      path: /pactor-app-risk-analysis,
-      title: 风险分析,
-      icon: chart,
-      order: 1,
-      public: true,
-    }
-  - {
-      id: risk-decision,
-      type: page,
-      pageId: "pactor-app-risk-decision:risk-decision",
-      path: /pactor-app-risk-decision,
-      title: 风险决策,
-      icon: shield,
-      order: 2,
-      public: true,
-    }
-
 layouts:
   shell: layouts/shell.layout.yaml
+
+menus:
+  # 一级菜单：点击进入对应应用的根页面，右侧内容区渲染应用自己的
+  # 布局（应用二级菜单 + 页面）。
+  - id: app-risk-analysis
+    type: page
+    pageId: "pactor-app-risk-analysis:risk-data-value"
+    title: 风险分析
+    icon: chart
+    # 根路径同样由应用布局承载（该路径同时命中模块内同名菜单，
+    # 两边 layout 保持一致，选中哪个条目的解析结果相同）。
+    layout: risk-analysis-admin
+    root: true
+    public: true
+  - id: app-risk-decision
+    type: page
+    pageId: "pactor-app-risk-decision:risk-decision"
+    title: 风险决策
+    icon: shield
+    layout: risk-decision-admin
+    root: true
+    public: true

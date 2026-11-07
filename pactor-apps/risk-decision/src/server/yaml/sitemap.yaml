@@ -1,22 +1,46 @@
-# 风险决策：总览（根路径）+ 对接日志（/integration-logs）。
-# 页面与布局 DSL 在 /api/sitemap 响应中内联下发。
-# 无侧栏：仅一个全宽内容区，顶栏由页面自绘。
+# 风险决策：总览（根路径）+ 对接日志（/integration-logs）+ 指标说明（/guide）。
+# 页面与布局 DSL 在 /api/sitemap 响应中内联下发；
+# 菜单独立为 /api/menus 接口，客户端多源合并。
+# 应用外壳：左侧二级菜单（应用自己的菜单）+ 右侧内容区独立滚动。
+# 接入 Shell 时外层再套一层 Shell 一级导航（60px 图标轨），见 parent: shell。
 id: site
 resourceType: sitemap
 version: 1
 dslVersion: "1.0"
 app: { name: Pactor Console }
+layout: risk-decision-admin
 
 layouts:
-  # 无菜单外壳：内容区铺满视口并独立滚动。
-  admin:
+  # 布局名在 Shell 内全局唯一（两个业务模块各有一套，避免互相覆盖）。
+  # Standalone 时作为根布局；接入 Shell 后以 parent: shell 嵌套在
+  # Shell 的内容区内，Sidebar 由 Shell 提供，这里只渲染应用自己的菜单。
+  risk-decision-admin:
     dsl: "1.0"
+    parent: shell
     body:
       type: Layout
-      props: { className: shell-root }
+      props: { className: "app-shell" }
       children:
+        # 二级导航：应用自己的菜单，占满剩余高度、独立滚动
+        - type: Sider
+          props:
+            width: 224
+            className: "app-shell-sider"
+          children:
+            - type: Text
+              props:
+                text: Pactor Console
+                strong: true
+                className: "app-shell-brand"
+            - type: SitemapMenu
+              props:
+                items: ${data.session.menus}
+              events:
+                onSelect:
+                  - action: navigate
+                    params: { to: "${event}" }
         - type: Content
-          props: { className: shell-content }
+          props: { className: "app-shell-content" }
           children:
             - type: PageOutlet
 
@@ -32,21 +56,13 @@ pages:
     title: 对接日志
     version: 1
     file: risk-decision/integration-logs.page.yaml
+  # 静态说明页：新增菜单 / 页面示例
+  - id: metrics-guide
+    path: /guide
+    title: 指标说明
+    version: 1
+    file: risk-decision/metrics-guide.page.yaml
 
+# 菜单由 /api/menus 下发；此处 $include 供模块打包展开为内联 menus。
 menus:
-  - id: risk-decision
-    type: page
-    pageId: risk-decision
-    path: /
-    title: 风险决策
-    icon: shield
-    layout: admin
-    public: true
-  - id: integration-logs
-    type: page
-    pageId: integration-logs
-    path: /integration-logs
-    title: 对接日志
-    icon: file-text
-    layout: admin
-    public: true
+  $include: menus.yaml

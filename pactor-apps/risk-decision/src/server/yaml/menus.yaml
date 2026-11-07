@@ -1,0 +1,28 @@
+# 菜单配置：由 /api/menus 接口下发，客户端与 /api/sitemap 多源合并。
+# path / title 缺省时从 pageId 指向的页面继承。
+# layout 指向本应用的布局：独立运行时是根布局；接入 Shell 后该布局以
+# parent: shell 嵌套在 Shell 内容区，渲染应用自己的二级菜单。
+- id: risk-decision
+  type: page
+  pageId: risk-decision
+  path: /
+  title: 风险决策
+  icon: shield
+  layout: risk-decision-admin
+  public: true
+- id: integration-logs
+  type: page
+  pageId: integration-logs
+  path: /integration-logs
+  title: 对接日志
+  icon: file-text
+  layout: risk-decision-admin
+  public: true
+- id: metrics-guide
+  type: page
+  pageId: metrics-guide
+  path: /guide
+  title: 指标说明
+  icon: info
+  layout: risk-decision-admin
+  public: true

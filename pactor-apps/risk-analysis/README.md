@@ -1,8 +1,8 @@
 # 风险分析 · 数据价值分析工作台
 
-从 `nextjs-version` 拆出的独立单页工程，仅保留「风险分析 / 数据价值分析工作台」
-（根路径 `/`），登录、其他工作台、任务、系统管理等均已移除。
-页面铺满视口，左侧一二级菜单已移除。
+从 `nextjs-version` 拆出的独立工程，仅保留「数据价值分析工作台」（根路径 `/`）
+与「分析说明」（`/guide`），登录、其他工作台、任务、系统管理等均已移除。
+应用外壳自带左侧二级菜单；接入 Shell 后外层再套 60px 一级图标轨。
 
 ## 运行
 
@@ -24,13 +24,19 @@ pnpm start      # http://localhost:8021
 | --- | --- |
 | `app/layout.tsx` | 根布局，挂载 `PactorApp`（跨路由常驻） |
 | `app/api/sitemap/route.ts` | 下发内联了布局 / 页面 DSL 的 sitemap |
+| `app/api/menus/route.ts` | 下发应用菜单（读取 `src/server/yaml/menus.yaml`） |
 | `app/api/risk-analysis/*/route.ts` | standalone 薄路由，转调 `src/server/api/*` |
+| `src/server/menus.ts` | 菜单接口数据源（后续可替换为数据库 / 权限服务） |
 | `src/server/api/data-value.ts` | 页面数据响应（KPI / 分布 / 散点 / PSI） |
 | `src/server/api/feature-source-summary.ts` | 特征来源汇总响应（服务端分页） |
 | `module/server.ts` | 模块 server entry：逻辑路径 → 方法 handler |
-| `src/server/yaml/` | sitemap 与页面 YAML DSL |
+| `src/server/yaml/` | sitemap、menus 与页面 YAML DSL |
 | `src/shared/data-value.ts` | 页面演示数据与按日期区间的派生逻辑 |
 | `src/pactor/components/` | 外壳与页面样式 |
+
+菜单由 `src/server/yaml/menus.yaml` 维护，经 `/api/menus` 下发；`src/pactor/config.ts` 的
+`sitemapSources` 将 `/api/sitemap` 与 `/api/menus` 多源合并，布局 DSL 通过
+`${data.session.menus}` 渲染应用二级菜单。
 
 ## 模块打包（tgz）
 

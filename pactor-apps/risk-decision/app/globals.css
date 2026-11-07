@@ -15,7 +15,7 @@ body {
   color: var(--foreground);
 }
 
-/* ── 无菜单外壳：Layout 锁定视口高度，内容区独立滚动 ────────────── */
+/* ── 外壳：Layout 锁定视口高度，侧栏与内容区独立滚动 ────────────── */
 .shell-root {
   height: 100dvh;
   overflow: hidden;

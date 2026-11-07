@@ -4,6 +4,7 @@
 
 - **构建期装配**：Shell 在构建前扫描已安装的模块包，生成路由、菜单、页面索引与注册表；
 - **运行期渲染**：页面由 Pactor 的 YAML DSL 描述，`PactorHost` 通过 `/api/runtime/*` 加载页面、片段与布局；
+- **两级导航**：Shell 一级菜单（最左侧 60px 图标轨）与当前应用的二级菜单（应用内 Sider）统一由 `/api/menus` 下发，经 `session.context` 注入布局；
 - **模块交付物**：模块工程产出 `dist-module/`（Manifest V1 + DSL + client bundle + assets + 可选 server bundle），打包为 tgz 后由 Shell 以 `file:` 依赖安装。
 
 更完整的架构、模块契约与排查手册见 [`web-shell/README.md`](web-shell/README.md)。
@@ -17,6 +18,7 @@ innospots-apps-template/
 │   │   ├── (workspace)/[...slug]/   # 工作区页面入口（所有模块页面在此渲染）
 │   │   └── api/
 │   │       ├── runtime/             # bootstrap / pages / fragments 运行时接口
+│   │       ├── menus/               # 两级导航（一级 root + 各应用二级 modules）
 │   │       └── modules/[moduleId]/  # 模块服务端 API 统一分发（/api/modules/<id>/*）
 │   ├── src/
 │   │   ├── shell/                   # Shell 自带站点（sitemap.yaml、shell.layout.yaml）
@@ -36,7 +38,7 @@ innospots-apps-template/
 
 ```text
 pactor-apps/<app>/
-├── app/                           # 独立运行入口（PactorApp、sitemap API、可选业务 API）
+├── app/                           # 独立运行入口（PactorApp、sitemap / menus API、可选业务 API）
 ├── module/                        # 模块接入面（由 pactor module init 生成）
 │   ├── client.ts                  # 扩展注册表入口（components / actions）
 │   ├── module.css                 # 模块自带样式（可选，由 client.ts import）
@@ -88,8 +90,25 @@ pnpm dev      # http://localhost:8021
 
 | 模块 | 公开路径 | 说明 |
 | --- | --- | --- |
-| risk-analysis | `/pactor-app-risk-analysis` | 风险数据取值页，含 `/api/risk-analysis/*` 服务端 API |
-| risk-decision | `/pactor-app-risk-decision` | 风险决策页；`/pactor-app-risk-decision/integration-logs` 为隐藏路由 |
+| risk-analysis | `/pactor-app-risk-analysis`、`/pactor-app-risk-analysis/guide` | 风险数据取值页 + 分析说明页，含 `/api/risk-analysis/*` 服务端 API |
+| risk-decision | `/pactor-app-risk-decision`、`/pactor-app-risk-decision/integration-logs`、`/pactor-app-risk-decision/guide` | 风险决策页 / 对接日志页 / 指标说明页 |
+
+## 菜单与两级导航
+
+菜单数据来源分三层：
+
+| 层 | 来源 | 消费方 |
+| --- | --- | --- |
+| Shell 一级菜单 | `web-shell/src/shell/sitemap.yaml` 中 `root: true` 的条目 | 最左侧 60px 图标轨（`shell.layout.yaml`） |
+| 应用二级菜单 | 各模块 sitemap 的 `menus`（装配期合并并标记 `moduleId`） | 应用布局内的 224px Sider |
+| 独立运行菜单 | 模块自己的 `src/server/yaml/menus.yaml` | `pactor-apps/*/app/api/menus` |
+
+运行时由 `/api/menus` 一次性下发：
+
+- `menus`：当前会话可见的 sitemap 片段，`PactorHost` 作为附加数据源合并，供路由与布局解析；
+- `navigation`：`{ user, app, root, modules }` 展示模型。`root` 是一级菜单，`modules[moduleId]` 是各应用二级菜单。
+
+`PactorHost` 按当前路径最长前缀匹配出 `activeRoot`，把 `rootMenus`、`activeRootKey` 与当前应用的 `menus` 写入 `session.context` 服务；Shell 布局读取 `rootMenus` 渲染一级菜单，应用布局通过 `${data.session.menus}` 渲染二级菜单。切换一级菜单只替换应用的 `Sider`，Shell 外壳本身不重建。
 
 ## 模块开发与接入流程
 
@@ -124,7 +143,7 @@ pnpm dev      # http://localhost:8021
 5. **在 Shell 中安装模块包**
    ```bash
    cd web-shell
-   pnpm add ../pactor-apps/risk-analysis/risk-analysis-0.1.3.tgz
+   pnpm add ../pactor-apps/risk-analysis/risk-analysis-0.1.6.tgz
    ```
    请使用模块工程当前实际生成的 tgz 文件名。
 
@@ -147,7 +166,7 @@ pnpm dev      # http://localhost:8021
    pnpm dev
    ```
 
-> Shell 的一级菜单在 `web-shell/src/shell/sitemap.yaml` 中维护，通过 `<moduleId>:<pageId>` 指向模块页面；`menuMode: "hidden"` 的模块只补充隐藏路由，不会重复出现在导航中。
+> Shell 的一级菜单在 `web-shell/src/shell/sitemap.yaml` 中维护（`root: true`），通过 `<moduleId>:<pageId>` 指向模块页面；模块自己的菜单由装配器打上 `moduleId`，运行时经 `/api/menus` 归入对应应用的二级菜单。`menuMode: "hidden"` 的模块只补充隐藏路由，不会出现在两级导航中。
 
 ## 常用命令
 
@@ -174,8 +193,9 @@ pnpm dev      # http://localhost:8021
 | `<module>/dist-module/` | `manifest.json`、`module-assets.json`、`dsl/`、`client/`、`assets/`、可选 `server/index.mjs` |
 | `<module>/<name>-<version>.tgz` | Shell 通过 `file:` 安装的模块包 |
 | `web-shell/.generated/pactor/` | 装配索引与注册表（routes / menus / pages / client-registry 等） |
-| `web-shell/public/modules/<moduleId>/<version>/` | 模块 DSL 与静态资源，浏览器经 `/modules/...` 访问 |
-| `web-shell/src/shell/sitemap.yaml` | Shell 固定菜单、布局与默认页面配置 |
+| `web-shell/public/modules/<moduleId>/<version>/` | 当前版本模块的静态资源（旧版本目录由 `assemble:modules` 清理） |
+| `web-shell/app/api/menus/route.ts` | 两级导航接口：`menus`（sitemap 片段）+ `navigation`（root / modules 展示模型） |
+| `web-shell/src/shell/sitemap.yaml` | Shell 一级菜单（`root: true`）、布局与默认页面配置 |
 | `web-shell/src/modules/module-list.json` | 模块启停、菜单接入模式与默认访问级别 |
 
 模块样式写在 `module/module.css`（通过 `module/client.ts` import），构建时抽取为 `dist-module/client/index.css` 并写入 manifest 的 `styles`，由 Shell 自动加载。Tailwind 基础样式、主题变量与 reset 由 Shell 统一提供，模块内不要重复引入。
@@ -192,4 +212,4 @@ pnpm dev      # http://localhost:8021
 - 修改模块源码后，必须重新 `build:module` → `pack:module`，在 Shell 中安装新 tgz，再执行 `assemble:modules`；Shell 不会热加载模块源码。
 - `.generated/pactor/` 与 `public/modules/` 是装配生成物，不要手工修改。
 - 启用 server entry 必须同时配置 `serverEntry` 与 `apiPrefixes`，`package.json` 需导出 `./server`（`pactor module init --server` 会自动注入），且 `target` 为 `innospots-web-shell@3`。
-- 当前示例模块为 `risk-analysis` 0.1.3（含 server entry）与 `risk-decision` 0.1.3；版本以各 `package.json` 与 `module-list.json` 实际配置为准。
+- 当前示例模块为 `risk-analysis` 0.1.6（含 server entry）与 `risk-decision` 0.1.6；版本以各 `package.json` 与 `module-list.json` 实际配置为准。

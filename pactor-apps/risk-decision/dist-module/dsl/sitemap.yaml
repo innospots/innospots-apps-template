@@ -4,17 +4,37 @@ version: 1
 dslVersion: "1.0"
 app:
   name: Pactor Console
+layout: risk-decision-admin
 layouts:
-  admin:
+  risk-decision-admin:
     dsl: "1.0"
+    parent: shell
     body:
       type: Layout
       props:
-        className: shell-root
+        className: app-shell
       children:
+        - type: Sider
+          props:
+            width: 224
+            className: app-shell-sider
+          children:
+            - type: Text
+              props:
+                text: Pactor Console
+                strong: true
+                className: app-shell-brand
+            - type: SitemapMenu
+              props:
+                items: ${data.session.menus}
+              events:
+                onSelect:
+                  - action: navigate
+                    params:
+                      to: ${event}
         - type: Content
           props:
-            className: shell-content
+            className: app-shell-content
           children:
             - type: PageOutlet
 pages:
@@ -28,18 +48,30 @@ pages:
     title: 对接日志
     version: 1
     file: risk-decision/integration-logs.page.yaml
+  - id: metrics-guide
+    path: /guide
+    title: 指标说明
+    version: 1
+    file: risk-decision/metrics-guide.page.yaml
 menus:
   - id: risk-decision
     type: page
     pageId: risk-decision
     title: 风险决策
     icon: shield
-    layout: admin
+    layout: risk-decision-admin
     public: true
   - id: integration-logs
     type: page
     pageId: integration-logs
     title: 对接日志
     icon: file-text
-    layout: admin
+    layout: risk-decision-admin
+    public: true
+  - id: metrics-guide
+    type: page
+    pageId: metrics-guide
+    title: 指标说明
+    icon: info
+    layout: risk-decision-admin
     public: true

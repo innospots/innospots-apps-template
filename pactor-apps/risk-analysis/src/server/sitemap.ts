@@ -6,7 +6,7 @@ import { parse } from "yaml";
 
 /**
  * 单页应用的 sitemap 数据源：布局与页面 DSL 直接从 yaml/ 读取并内联
- * 返回。只有一个页面，无需会话裁剪与懒加载端点。
+ * 返回；菜单由 /api/menus 单独下发（客户端多源合并）。
  */
 
 const YAML_DIR = join(process.cwd(), "src/server/yaml");
@@ -28,7 +28,6 @@ interface SiteFile {
   app: { name: string };
   layouts: Record<string, LayoutDsl | string>;
   pages: PageEntry[];
-  menus: SitemapResource["menus"];
 }
 
 function loadYaml<T>(file: string): T {
@@ -56,6 +55,7 @@ export function buildSitemap(): SitemapResource {
     app: site.app,
     layouts,
     pages,
-    menus: site.menus,
+    // 菜单由 /api/menus 下发，避免与多源合并后的菜单重复
+    menus: [],
   };
 }

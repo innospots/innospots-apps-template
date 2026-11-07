@@ -1,4 +1,22 @@
 /* src/pactor/components/risk-shell.css */
+.app-shell {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.app-shell-sider {
+  border-right: 1px solid var(--border);
+}
+.app-shell-brand {
+  display: block;
+  padding: 16px 16px 8px;
+  font-size: 14px;
+  color: var(--foreground);
+}
+.app-shell-content {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
 .risk-page {
   padding: 18px 24px 72px;
 }

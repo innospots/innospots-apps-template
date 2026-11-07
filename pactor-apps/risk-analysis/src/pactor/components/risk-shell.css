@@ -1,7 +1,34 @@
 /* ─── 单页应用共享外壳 ────────────────────────────────────────────────────
- * 无菜单：内容区铺满视口，页面自绘顶栏；仅保留页面容器、顶栏与分节样式。
+ * 左侧菜单由布局提供，内容区占满剩余空间；页面自绘顶栏，仅保留页面
+ * 容器、顶栏与分节样式。
  * 颜色全部走皮肤语义令牌（app/theme.css），切肤自动适配。
  * ────────────────────────────────────────────────────────────────────────── */
+
+/* ─── 应用外壳（Standalone 根布局 / Shell 内容区内的二级布局） ───────────── */
+
+/* 填满父容器：Standalone 时父级是 h-full 的 body，接入 Shell 时是
+   Shell 的内容区。外壳自身不滚动，左右两栏各自滚动。 */
+.app-shell {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-shell-sider {
+  border-right: 1px solid var(--border);
+}
+
+.app-shell-brand {
+  display: block;
+  padding: 16px 16px 8px;
+  font-size: 14px;
+  color: var(--foreground);
+}
+
+.app-shell-content {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
 
 /* ─── 通用页面容器 ──────────────────────────────────────────────────────── */
 

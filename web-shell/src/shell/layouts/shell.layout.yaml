@@ -1,9 +1,10 @@
 # Shell 默认页面布局。
-# 最左侧为固定的一级菜单：Sidebar 关闭折叠（collapsible: false），
-# Menu 不开启 collapsible 且菜单项没有 children，因此既不能收起，
-# 也不能展开子菜单。
-# 右侧 Content 内的 PageOutlet 是页面出口：将来安装的三方应用命中
-# 自己的路由后，由同一布局在这里渲染。
+# 最左侧为 60px 宽的一级导航图标轨（Sidebar + 收起态 Menu）：
+#   - 一级菜单项由 sitemap.yaml 的 menus（root: true）声明；
+#   - 图标轨只展示图标，悬浮显示 Tooltip；
+#   - 当前路径所属应用由 PactorHost 按最长前缀匹配，作为 selectedKey。
+# 右侧 Content 内的 PageOutlet 渲染业务应用自己的布局：应用二级菜单
+# （应用内 Sider，宽 224px）+ 页面内容，由应用布局的 parent: shell 嵌套。
 dsl: "1.0"
 body:
   type: Layout
@@ -12,13 +13,18 @@ body:
     - type: Sidebar
       props:
         className: "flex-1"
-        style: { minHeight: 0 }
-        brand: { title: InnoSpots }
+        style:
+          minHeight: 0
+          # 覆盖主题令牌：Sidebar 的占位宽度与固定容器宽度都取该变量
+          "--sidebar-width": "60px"
         collapsible: false
         content:
-          type: SitemapMenu
+          type: Menu
           props:
-            items: ${data.session.menus}
+            items: ${data.session.rootMenus}
+            mode: inline
+            collapsed: true
+            selectedKey: ${data.session.activeRootKey}
           events:
             onSelect:
               - action: navigate
@@ -26,7 +32,7 @@ body:
       children:
         - type: Content
           props:
-            className: "overflow-y-auto"
+            className: "overflow-hidden"
             style: { background: "var(--background)" }
           children:
             - type: PageOutlet

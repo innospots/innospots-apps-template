@@ -12,5 +12,8 @@ export function createShellNavigate(router: AppRouterInstance) {
 
 export const runtimeSitemapSource = "/api/runtime/bootstrap";
 
+/** 菜单接口：作为附加 sitemap 源，与 bootstrap 合并出路由 / 布局所需的菜单 */
+export const runtimeMenusSource = "/api/menus";
+
 export const runtimePageEndpoint = (pageId: string) =>
   `/api/runtime/pages/${encodeURIComponent(pageId)}`;

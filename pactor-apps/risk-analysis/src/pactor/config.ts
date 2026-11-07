@@ -1,7 +1,7 @@
 import type { SitemapGuard } from "pactor-app";
 
-/** sitemap 源：服务端从 yaml/ 读取布局与页面 DSL 后返回 */
-export const sitemapSources: string[] = ["/api/sitemap"];
+/** sitemap 源：页面 / 布局来自 /api/sitemap，菜单来自 /api/menus（多源合并） */
+export const sitemapSources: string[] = ["/api/sitemap", "/api/menus"];
 
 /**
  * 本工程不检查用户状态：放行全部路径。

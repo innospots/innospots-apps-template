@@ -200,17 +200,35 @@ function applyPublicAccess(items, entry) {
 }
 
 /**
+ * 给模块菜单打上 moduleId 标记：运行时据此把菜单归组到所属应用，
+ * 只下发给当前应用自己的二级菜单（Shell 一级菜单不参与归组）。
+ */
+function markModuleMenus(menus, moduleId) {
+  return (menus ?? []).map((item) => {
+    const next = { ...item, moduleId };
+    if (next.children) {
+      next.children = markModuleMenus(next.children, moduleId);
+    }
+    return next;
+  });
+}
+
+/**
  * 模块菜单接入模式（module-list 可选配置）：
  * - merge（默认）：模块菜单原样并入 Shell 导航；
  * - hidden：模块菜单注册为隐藏路由（不出现在导航），并移除菜单级 layout，
  *   让页面落到 Shell 默认布局（固定侧栏 + 右侧 PageOutlet）。适合 Shell
  *   已提供一级菜单、模块只补充二级页面（如详情 / 日志）的场景。
+ * Shell 自带站点（isBaseSite）不参与归组：它的菜单就是一级菜单。
  */
-function transformModuleMenus(menus, moduleId, entry) {
+function transformModuleMenus(menus, moduleId, entry, options = {}) {
   const namespaced = namespaceMenus(menus, moduleId);
+  const grouped = options.isBaseSite
+    ? namespaced
+    : markModuleMenus(namespaced, moduleId);
 
   if (entry.menuMode !== "hidden") {
-    return applyPublicAccess(namespaced, entry);
+    return applyPublicAccess(grouped, entry);
   }
 
   const hide = (item) => {
@@ -224,7 +242,7 @@ function transformModuleMenus(menus, moduleId, entry) {
     return next;
   };
 
-  return applyPublicAccess(namespaced.map(hide), entry);
+  return applyPublicAccess(grouped.map(hide), entry);
 }
 
 function buildSitemapMeta(site, basePath, layouts) {
@@ -277,7 +295,7 @@ function findPageDslFile(dslRoot, pageId) {
   return null;
 }
 
-function assembleModule(entry, manifest, manifestDir) {
+function assembleModule(entry, manifest, manifestDir, options = {}) {
   const basePath = normalizeBasePath(entry.basePath ?? manifest.basePath);
   const moduleId = manifest.id;
   const server = resolveModuleServer(
@@ -343,7 +361,19 @@ function assembleModule(entry, manifest, manifestDir) {
 
   if (manifest.assetsRoot) {
     const assetsSource = resolve(manifestDir, manifest.assetsRoot);
-    const assetsTarget = join(PUBLIC_MODULES, moduleId, manifest.version);
+    const moduleAssetsDir = join(PUBLIC_MODULES, moduleId);
+    const assetsTarget = join(moduleAssetsDir, manifest.version);
+
+    // 只保留当前版本：旧版本 tgz 与目录已不再被装配产物引用，
+    // 避免每次 pack 后 public/modules 无限累积历史版本。
+    if (existsSync(moduleAssetsDir)) {
+      for (const name of readdirSync(moduleAssetsDir)) {
+        if (name !== manifest.version) {
+          rmSync(join(moduleAssetsDir, name), { recursive: true, force: true });
+        }
+      }
+    }
+
     try {
       if (existsSync(assetsSource)) {
         cpSync(assetsSource, assetsTarget, { recursive: true });
@@ -365,7 +395,7 @@ function assembleModule(entry, manifest, manifestDir) {
     },
     routes,
     pages,
-    menus: transformModuleMenus(site.menus, moduleId, entry),
+    menus: transformModuleMenus(site.menus, moduleId, entry, options),
     sitemapMeta: buildSitemapMeta(site, basePath, layouts),
     layouts,
     dslCopies,
@@ -398,6 +428,8 @@ function assembleBaseSite() {
     { package: "@innospots/shell-site", basePath: "/" },
     manifest,
     BASE_SITE_DIR,
+    // 基座菜单是 Shell 一级菜单，不归组到某个应用
+    { isBaseSite: true },
   );
 }
 
@@ -525,7 +557,19 @@ function main() {
     allRoutes.push(...assembled.routes);
     allPages.push(...assembled.pages);
     allMenus.push(...assembled.menus);
-    Object.assign(moduleLayouts, assembled.layouts);
+    // 布局名在装配结果中全局可见：重名会被后装配的模块静默覆盖，
+    // 因此显式报错，要求模块布局使用模块内唯一名称。
+    for (const [name, dsl] of Object.entries(assembled.layouts)) {
+      if (
+        Object.prototype.hasOwnProperty.call(moduleLayouts, name) ||
+        Object.prototype.hasOwnProperty.call(baseLayouts, name)
+      ) {
+        throw new Error(
+          `模块 ${manifest.id} 的布局 ${name} 与已装配模块冲突，请为布局使用模块内唯一名称`,
+        );
+      }
+      moduleLayouts[name] = dsl;
+    }
     if (!sitemapMeta) {
       sitemapMeta = assembled.sitemapMeta;
     }

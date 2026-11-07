@@ -1,0 +1,72 @@
+# 分析说明：静态说明页，演示新增菜单与页面。
+# 顶栏（面包屑 + 标题 + 返回）→ 副标题 → 指标口径卡片。
+dsl: "1.0"
+page:
+  id: analysis-guide
+  title: 分析说明
+body:
+  type: Page
+  props: { className: p-0 risk-page }
+  children:
+    # 顶栏（本页自绘）：面包屑 + 标题；右侧返回工作台
+    - type: Header
+      props:
+        className: risk-topbar
+      children:
+        - type: Flex
+          props:
+            { direction: vertical, gap: 2, className: risk-topbar-heading }
+          children:
+            - type: Text
+              props:
+                text: 风险分析 / 分析说明
+                className: risk-topbar-breadcrumb
+            - type: Typography
+              props:
+                { variant: h2, text: 分析说明, className: risk-topbar-title }
+        - type: Flex
+          props:
+            { className: risk-topbar-actions, align: center, gap: 8 }
+          children:
+            - type: Button
+              props:
+                {
+                  text: 返回工作台,
+                  icon: arrow-left,
+                  size: small,
+                  variant: default,
+                }
+              events:
+                onClick:
+                  - action: navigate
+                    params: { to: / }
+
+    # 副标题：与工作台一致，随内容滚动
+    - type: Text
+      props:
+        text: 数据价值分析的口径与指标说明
+        className: risk-page-subtitle
+
+    # 指标口径
+    - type: Card
+      props:
+        title: 指标口径
+      children:
+        - type: Flex
+          props: { direction: vertical, gap: 8 }
+          children:
+            - type: Text
+              props:
+                text: 特征总量：统计期内参与计算的全部特征数量。
+            - type: Text
+              props:
+                text: 有值特征量：统计期内至少有一个有效取值的特征数量。
+            - type: Text
+              props:
+                text: IV 值：衡量特征对好坏样本区分能力的指标，值越高区分能力越强。
+            - type: Text
+              props:
+                text: KS 值：衡量模型区分能力的指标，反映好坏样本累计分布的最大差距。
+            - type: Text
+              props:
+                text: PSI 值：衡量特征分布在时间维度上的稳定性，值越小越稳定。

@@ -30,11 +30,11 @@ importers:
         specifier: 19.2.8
         version: 19.2.8(react@19.2.8)
       risk-analysis:
-        specifier: file:../pactor-apps/risk-analysis/risk-analysis-0.1.2.tgz
-        version: file:../pactor-apps/risk-analysis/risk-analysis-0.1.2.tgz(next@16.3.5(@babel/core@7.29.7)(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(pactor-app@1.55.0(@date-fns/tz@1.5.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react-router-dom@7.18.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(vite@8.3.5(@types/node@20.19.43)(jiti@2.7.0)(yaml@2.9.1)))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: file:../pactor-apps/risk-analysis/risk-analysis-0.1.6.tgz
+        version: file:../pactor-apps/risk-analysis/risk-analysis-0.1.6.tgz(next@16.3.5(@babel/core@7.29.7)(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(pactor-app@1.55.0(@date-fns/tz@1.5.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react-router-dom@7.18.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(vite@8.3.5(@types/node@20.19.43)(jiti@2.7.0)(yaml@2.9.1)))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       risk-decision:
-        specifier: file:../pactor-apps/risk-decision/risk-decision-0.1.2.tgz
-        version: file:../pactor-apps/risk-decision/risk-decision-0.1.2.tgz(next@16.3.5(@babel/core@7.29.7)(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(pactor-app@1.55.0(@date-fns/tz@1.5.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react-router-dom@7.18.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(vite@8.3.5(@types/node@20.19.43)(jiti@2.7.0)(yaml@2.9.1)))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: file:../pactor-apps/risk-decision/risk-decision-0.1.6.tgz
+        version: file:../pactor-apps/risk-decision/risk-decision-0.1.6.tgz(next@16.3.5(@babel/core@7.29.7)(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(pactor-app@1.55.0(@date-fns/tz@1.5.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react-router-dom@7.18.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(vite@8.3.5(@types/node@20.19.43)(jiti@2.7.0)(yaml@2.9.1)))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       yaml:
         specifier: ^2.9.1
         version: 2.9.1
@@ -2950,18 +2950,18 @@ packages:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
 
-  risk-analysis@file:../pactor-apps/risk-analysis/risk-analysis-0.1.2.tgz:
-    resolution: {integrity: sha512-orsyfT5GmOS/u3CQiFlhaPfFfAkO8gKYln8LkZkkzHSj+4CIPdXICE+twOqWAE5oQeFGC6PTfNvaX1HjYKwesg==, tarball: file:../pactor-apps/risk-analysis/risk-analysis-0.1.2.tgz}
-    version: 0.1.2
+  risk-analysis@file:../pactor-apps/risk-analysis/risk-analysis-0.1.6.tgz:
+    resolution: {integrity: sha512-nGErM10m1GhLJ4c8RMeOaNKhfAMgbLStuBPGrfdGuPvtNowOvLtKMyzXocoWRjWPPHWXuGnr3EPble586wHMyA==, tarball: file:../pactor-apps/risk-analysis/risk-analysis-0.1.6.tgz}
+    version: 0.1.6
     peerDependencies:
       next: 16.3.5
       pactor-app: 1.55.0
       react: 19.2.8
       react-dom: 19.2.8
 
-  risk-decision@file:../pactor-apps/risk-decision/risk-decision-0.1.2.tgz:
-    resolution: {integrity: sha512-7EQiV3y5tgckvW/yqkbfRfT/wJnbt8whOw5+JKCwWiJmQSy6SRZj2mKjQd5Pg0DYau1AXsqm8F89M3mk6L/TIg==, tarball: file:../pactor-apps/risk-decision/risk-decision-0.1.2.tgz}
-    version: 0.1.2
+  risk-decision@file:../pactor-apps/risk-decision/risk-decision-0.1.6.tgz:
+    resolution: {integrity: sha512-p6gDaFYV946tmWC2rMA8HMp8eQPOC4OU4Ba/rxIqItY77BSFQaWmQXwYSuMKw72nbxJ1CaCtaALySZPSV9IY7Q==, tarball: file:../pactor-apps/risk-decision/risk-decision-0.1.6.tgz}
+    version: 0.1.6
     peerDependencies:
       next: 16.3.5
       pactor-app: 1.55.0
@@ -6653,7 +6653,7 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  risk-analysis@file:../pactor-apps/risk-analysis/risk-analysis-0.1.2.tgz(next@16.3.5(@babel/core@7.29.7)(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(pactor-app@1.55.0(@date-fns/tz@1.5.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react-router-dom@7.18.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(vite@8.3.5(@types/node@20.19.43)(jiti@2.7.0)(yaml@2.9.1)))(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  risk-analysis@file:../pactor-apps/risk-analysis/risk-analysis-0.1.6.tgz(next@16.3.5(@babel/core@7.29.7)(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(pactor-app@1.55.0(@date-fns/tz@1.5.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react-router-dom@7.18.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(vite@8.3.5(@types/node@20.19.43)(jiti@2.7.0)(yaml@2.9.1)))(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       next: 16.3.5(@babel/core@7.29.7)(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       pactor-app: 1.55.0(@date-fns/tz@1.5.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react-router-dom@7.18.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(vite@8.3.5(@types/node@20.19.43)(jiti@2.7.0)(yaml@2.9.1))
@@ -6661,7 +6661,7 @@ snapshots:
       react-dom: 19.2.8(react@19.2.8)
       yaml: 2.9.1
 
-  risk-decision@file:../pactor-apps/risk-decision/risk-decision-0.1.2.tgz(next@16.3.5(@babel/core@7.29.7)(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(pactor-app@1.55.0(@date-fns/tz@1.5.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react-router-dom@7.18.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(vite@8.3.5(@types/node@20.19.43)(jiti@2.7.0)(yaml@2.9.1)))(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  risk-decision@file:../pactor-apps/risk-decision/risk-decision-0.1.6.tgz(next@16.3.5(@babel/core@7.29.7)(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(pactor-app@1.55.0(@date-fns/tz@1.5.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react-router-dom@7.18.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(vite@8.3.5(@types/node@20.19.43)(jiti@2.7.0)(yaml@2.9.1)))(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       next: 16.3.5(@babel/core@7.29.7)(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       pactor-app: 1.55.0(@date-fns/tz@1.5.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react-router-dom@7.18.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(vite@8.3.5(@types/node@20.19.43)(jiti@2.7.0)(yaml@2.9.1))
