@@ -90,25 +90,14 @@ pnpm dev      # http://localhost:8021
 
 | 模块 | 公开路径 | 说明 |
 | --- | --- | --- |
-| risk-analysis | `/pactor-app-risk-analysis`、`/pactor-app-risk-analysis/guide` | 风险数据取值页 + 分析说明页，含 `/api/risk-analysis/*` 服务端 API |
+| risk-analysis | `/pactor-app-risk-analysis`、`/pactor-app-risk-analysis/guide`、`/pactor-app-risk-analysis/workbench/operations`、`/pactor-app-risk-analysis/workbench/tasks` | 风险分析、说明及两个工作台示例，含 `/api/risk-analysis/*` 服务端 API |
 | risk-decision | `/pactor-app-risk-decision`、`/pactor-app-risk-decision/integration-logs`、`/pactor-app-risk-decision/guide` | 风险决策页 / 对接日志页 / 指标说明页 |
 
 ## 菜单与两级导航
 
-菜单数据来源分三层：
+菜单有三种维护方式：Shell 配置一级入口、应用配置一级分组、Shell 统一配置全部菜单。前两种已支持；第三种目前是待实现方案。各方式的完整示例、运行流程与限制见 [菜单配置指南](web-shell/docs/menu-configuration.md)。当前风险决策采用第一种，风险分析采用第二种。
 
-| 层 | 来源 | 消费方 |
-| --- | --- | --- |
-| Shell 一级菜单 | `web-shell/src/shell/sitemap.yaml` 中 `root: true` 的条目 | 最左侧 60px 图标轨（`shell.layout.yaml`） |
-| 应用二级菜单 | 各模块 sitemap 的 `menus`（装配期合并并标记 `moduleId`） | 应用布局内的 224px Sider |
-| 独立运行菜单 | 模块自己的 `src/server/yaml/menus.yaml` | `pactor-apps/*/app/api/menus` |
-
-运行时由 `/api/menus` 一次性下发：
-
-- `menus`：当前会话可见的 sitemap 片段，`PactorHost` 作为附加数据源合并，供路由与布局解析；
-- `navigation`：`{ user, app, root, modules }` 展示模型。`root` 是一级菜单，`modules[moduleId]` 是各应用二级菜单。
-
-`PactorHost` 按当前路径最长前缀匹配出 `activeRoot`，把 `rootMenus`、`activeRootKey` 与当前应用的 `menus` 写入 `session.context` 服务；Shell 布局读取 `rootMenus` 渲染一级菜单，应用布局通过 `${data.session.menus}` 渲染二级菜单。切换一级菜单只替换应用的 `Sider`，Shell 外壳本身不重建。
+Shell 在装配期合并菜单，运行时由 `/api/menus` 返回一级和二级导航；应用独立运行时则使用应用自己的 `/api/menus`。菜单是否可见不等同于页面或业务 API 的授权。
 
 ## 模块开发与接入流程
 
@@ -143,7 +132,7 @@ pnpm dev      # http://localhost:8021
 5. **在 Shell 中安装模块包**
    ```bash
    cd web-shell
-   pnpm add ../pactor-apps/risk-analysis/risk-analysis-0.1.6.tgz
+   pnpm add ../pactor-apps/risk-analysis/risk-analysis-0.1.8.tgz
    ```
    请使用模块工程当前实际生成的 tgz 文件名。
 
@@ -166,7 +155,7 @@ pnpm dev      # http://localhost:8021
    pnpm dev
    ```
 
-> Shell 的一级菜单在 `web-shell/src/shell/sitemap.yaml` 中维护（`root: true`），通过 `<moduleId>:<pageId>` 指向模块页面；模块自己的菜单由装配器打上 `moduleId`，运行时经 `/api/menus` 归入对应应用的二级菜单。`menuMode: "hidden"` 的模块只补充隐藏路由，不会出现在两级导航中。
+> Shell 一级入口既可在 Shell 中配置，也可由应用的 `root: true` 分组提供；详见 [菜单配置指南](web-shell/docs/menu-configuration.md)。`menuMode: "hidden"` 会隐藏模块菜单并移除其菜单级布局。
 
 ## 常用命令
 
@@ -212,4 +201,4 @@ pnpm dev      # http://localhost:8021
 - 修改模块源码后，必须重新 `build:module` → `pack:module`，在 Shell 中安装新 tgz，再执行 `assemble:modules`；Shell 不会热加载模块源码。
 - `.generated/pactor/` 与 `public/modules/` 是装配生成物，不要手工修改。
 - 启用 server entry 必须同时配置 `serverEntry` 与 `apiPrefixes`，`package.json` 需导出 `./server`（`pactor module init --server` 会自动注入），且 `target` 为 `innospots-web-shell@3`。
-- 当前示例模块为 `risk-analysis` 0.1.6（含 server entry）与 `risk-decision` 0.1.6；版本以各 `package.json` 与 `module-list.json` 实际配置为准。
+- 示例模块版本以各 `package.json` 和 Shell 的依赖配置为准；tgz 被 Git 忽略，新检出环境需先生成 Shell 指定的包。

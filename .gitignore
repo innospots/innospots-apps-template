@@ -1,0 +1,21 @@
+# Dependencies and local package manager caches
+node_modules/
+.pnpm-store/
+
+# Build and module assembly output
+.next/
+.generated/
+dist/
+dist-module/
+out/
+web-shell/public/modules/*
+!web-shell/public/modules/.gitkeep
+
+# Packed application modules
+pactor-apps/**/*.tgz
+
+# Local tooling output
+*.tsbuildinfo
+*.log
+.DS_Store
+.idea/

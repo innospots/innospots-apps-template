@@ -1,7 +1,7 @@
 # 风险分析 · 数据价值分析工作台
 
-从 `nextjs-version` 拆出的独立工程，仅保留「数据价值分析工作台」（根路径 `/`）
-与「分析说明」（`/guide`），登录、其他工作台、任务、系统管理等均已移除。
+独立运行的风险分析示例，包括数据价值分析（`/`）、分析说明（`/guide`）、
+运营工作台（`/workbench/operations`）和任务工作台（`/workbench/tasks`）。
 应用外壳自带左侧二级菜单；接入 Shell 后外层再套 60px 一级图标轨。
 
 ## 运行
@@ -37,6 +37,12 @@ pnpm start      # http://localhost:8021
 菜单由 `src/server/yaml/menus.yaml` 维护，经 `/api/menus` 下发；`src/pactor/config.ts` 的
 `sitemapSources` 将 `/api/sitemap` 与 `/api/menus` 多源合并，布局 DSL 通过
 `${data.session.menus}` 渲染应用二级菜单。
+
+菜单中的“工作台”和“分析”是两个 `type: group` 一级分组，分别包含工作台页面
+和分析页面。独立运行时以分组形式展示；打包到 Shell 时，`root: true` 的分组
+分别挂到 Shell 一级图标轨，分组中的页面成为对应二级菜单。添加一级菜单时，
+在 `menus.yaml` 中增加带 `root: true` 的分组，并在 `children` 中引用已注册的页面；
+修改后需重新打包应用、安装到 Shell 并装配。
 
 ## 模块打包（tgz）
 

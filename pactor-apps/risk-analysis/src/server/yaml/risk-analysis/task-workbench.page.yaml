@@ -1,0 +1,24 @@
+dsl: "1.0"
+page:
+  id: task-workbench
+  title: 任务工作台
+body:
+  type: Page
+  props: { className: "p-0 risk-page" }
+  children:
+    - type: Header
+      props: { className: risk-topbar }
+      children:
+        - type: Typography
+          props: { variant: h2, text: 任务工作台, className: risk-topbar-title }
+    - type: Text
+      props: { text: 任务进度与待办事项示例, className: risk-page-subtitle }
+    - type: Card
+      props: { title: 任务概览 }
+      children:
+        - type: Flex
+          props: { direction: vertical, gap: 8 }
+          children:
+            - { type: Text, props: { text: "待处理任务：8 项（示例数据）" } }
+            - { type: Text, props: { text: "进行中任务：5 项（示例数据）" } }
+            - { type: Text, props: { text: "已完成任务：23 项（示例数据）" } }

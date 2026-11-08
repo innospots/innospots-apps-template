@@ -19,16 +19,6 @@ layouts:
 menus:
   # 一级菜单：点击进入对应应用的根页面，右侧内容区渲染应用自己的
   # 布局（应用二级菜单 + 页面）。
-  - id: app-risk-analysis
-    type: page
-    pageId: "pactor-app-risk-analysis:risk-data-value"
-    title: 风险分析
-    icon: chart
-    # 根路径同样由应用布局承载（该路径同时命中模块内同名菜单，
-    # 两边 layout 保持一致，选中哪个条目的解析结果相同）。
-    layout: risk-analysis-admin
-    root: true
-    public: true
   - id: app-risk-decision
     type: page
     pageId: "pactor-app-risk-decision:risk-decision"

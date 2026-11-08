@@ -1,0 +1,24 @@
+dsl: "1.0"
+page:
+  id: operations-workbench
+  title: 运营工作台
+body:
+  type: Page
+  props: { className: "p-0 risk-page" }
+  children:
+    - type: Header
+      props: { className: risk-topbar }
+      children:
+        - type: Typography
+          props: { variant: h2, text: 运营工作台, className: risk-topbar-title }
+    - type: Text
+      props: { text: 运营概览与待处理事项示例, className: risk-page-subtitle }
+    - type: Card
+      props: { title: 今日运营概览 }
+      children:
+        - type: Flex
+          props: { direction: vertical, gap: 8 }
+          children:
+            - { type: Text, props: { text: "待审核业务：12 项（示例数据）" } }
+            - { type: Text, props: { text: "今日已处理：36 项（示例数据）" } }
+            - { type: Text, props: { text: "建议及时关注待审核业务及异常提醒。" } }

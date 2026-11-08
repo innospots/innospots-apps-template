@@ -43,11 +43,14 @@ function matchRoot(
   pathname: string,
 ): ShellRootNavigationItem | null {
   let matched: ShellRootNavigationItem | null = null;
+  let matchedLength = -1;
   for (const item of root) {
-    const base = item.key.replace(/\/+$/, "");
-    const hit = pathname === base || pathname.startsWith(`${base}/`);
-    if (hit && (matched === null || item.key.length > matched.key.length)) {
-      matched = item;
+    for (const path of item.menuPaths ?? [item.key]) {
+      const base = path.replace(/\/+$/, "");
+      if ((pathname === base || pathname.startsWith(`${base}/`)) && base.length > matchedLength) {
+        matched = item;
+        matchedLength = base.length;
+      }
     }
   }
   return matched;
@@ -142,10 +145,10 @@ function PactorHostInner() {
       app: navigation?.app ?? { name: "InnoSpots" },
       rootMenus: navigation?.root ?? [],
       activeRootKey: activeRoot?.key,
-      menus:
+      menus: activeRoot?.submenu ?? (
         activeRoot?.moduleId !== undefined
           ? (navigation?.modules[activeRoot.moduleId] ?? [])
-          : [],
+          : []),
     };
     return {
       "session.context": () => Promise.resolve(session),

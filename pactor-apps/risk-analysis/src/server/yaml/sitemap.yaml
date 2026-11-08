@@ -45,6 +45,16 @@ layouts:
             - type: PageOutlet
 
 pages:
+  - id: operations-workbench
+    path: /workbench/operations
+    title: 运营工作台
+    version: 1
+    file: risk-analysis/operations-workbench.page.yaml
+  - id: task-workbench
+    path: /workbench/tasks
+    title: 任务工作台
+    version: 1
+    file: risk-analysis/task-workbench.page.yaml
   - id: risk-data-value
     path: /
     title: 数据价值分析工作台

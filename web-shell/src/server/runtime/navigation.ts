@@ -15,6 +15,8 @@ export type ShellNavigationItem = {
 /** Shell 一级菜单项：moduleId 指向该应用，用于取应用自己的二级菜单 */
 export type ShellRootNavigationItem = ShellNavigationItem & {
   moduleId?: string;
+  menuPaths?: string[];
+  submenu?: ShellNavigationItem[];
 };
 
 /**
@@ -117,6 +119,24 @@ export function buildRuntimeMenus(user: ShellUser | null): ShellMenusResource {
 
   for (const raw of visible) {
     if (!isRecord(raw)) continue;
+    if (raw.root === true && raw.type === "group" && Array.isArray(raw.children)) {
+      const children = raw.children
+        .map((child) => isRecord(child) ? toNavigationItem(child, pagesById) : null)
+        .filter((child): child is ShellNavigationItem => child !== null);
+      if (children.length === 0) continue;
+      const paths = (items: ShellNavigationItem[]): string[] => items.flatMap((item) =>
+        item.children?.length ? paths(item.children) : [item.key],
+      );
+      root.push({
+        key: paths(children)[0],
+        label: typeof raw.title === "string" ? raw.title : String(raw.id),
+        ...(typeof raw.icon === "string" ? { icon: raw.icon } : {}),
+        moduleId: resolveModuleId(raw, pagesById),
+        menuPaths: paths(children),
+        submenu: children,
+      });
+      continue;
+    }
     const item = toNavigationItem(raw, pagesById);
     if (item === null) continue;
 
